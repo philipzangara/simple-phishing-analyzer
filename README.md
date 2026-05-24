@@ -1,4 +1,6 @@
-A Python-based phishing email analyzer that parses .eml files and performs 
+## Simple Phishing Analyzer
+
+A Python-based phishing analyzer that parses .eml files and performs 
 automated triage including header analysis, URL extraction with VirusTotal 
 enrichment, attachment hashing with MalwareBazaar lookup, and risk scoring.
 
@@ -51,7 +53,10 @@ Test emails sourced from: https://github.com/rf-peixoto/phishing_pot/
 - Type checked with mypy
 - Unit tested with unittest
 
-Author: Philip Zangara
+## Version
+1.0.0
+
+## Author: Philip Zangara
 
 License: MIT
 

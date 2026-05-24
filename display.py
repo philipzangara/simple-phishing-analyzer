@@ -3,8 +3,8 @@ from pathlib import Path
 from config import DEBUG
 
 def display_results(results: dict, filename: str, hashes: list, vt_results: list, mb_results: list, score: dict) -> None:
-    print("*** Simple Email Phishing Analyzer ***")
-    print("=== File Info ===")
+    print("=== Simple Phishing Analyzer v1.0.0 ===")
+    print("\n=== File Info ===")
     print_field("Email: ", filename)
     print_field("Size: ", f"{Path(filename).stat().st_size} bytes")
     print("\n=== Header Analysis ===")
