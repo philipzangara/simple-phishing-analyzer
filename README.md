@@ -4,11 +4,7 @@ A Python-based phishing analyzer that parses .eml files and performs
 automated triage including header analysis, URL extraction with VirusTotal 
 enrichment, attachment hashing with MalwareBazaar lookup, and risk scoring.
 
-<<<<<<< HEAD
 ## Usage:
-=======
-## Usage
->>>>>>> a15f8c82aa5edfd7f4d0e6650c941683a57308b5
 Windows:
 ```
 python phishing_analyzer.py <path-to-file.eml>
@@ -43,21 +39,11 @@ Test emails sourced from: https://github.com/rf-peixoto/phishing_pot/
 
 ## Features
 
-<<<<<<< HEAD
 ✅ 1. Email Parsing  
 ✅ 2. Header Analysis  
 ✅ 3. URL Extraction  
 ✅ 4. Attachment Analysis  
 ✅ 5. Scoring and Report
-=======
-- Email Parsing  
-- Header Analysis  
-- URL Extraction  
-- Attachment Analysis  
-- Scoring and Report
-- MITRE ATT&CK Mapping: T1566 (Phishing), T1566.001 (Spearphishing Attachment), T1566.002 (Spearphishing Link)
-
->>>>>>> a15f8c82aa5edfd7f4d0e6650c941683a57308b5
 
 ## Sample Output
 
