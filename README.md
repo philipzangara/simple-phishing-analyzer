@@ -6,7 +6,7 @@ Simple Phishing Analyzer analyzes email headers, extracts security observables, 
 
 The analyzer can run entirely without API credentials. External threat intelligence enrichment is opt-in using the `--enrich` flag.
 
-![Sample Output](assets/screenshot.png)
+![Sample Output](assets/screenshot-output-v1.1.0.png)
 
 ## Skills Demonstrated
 
