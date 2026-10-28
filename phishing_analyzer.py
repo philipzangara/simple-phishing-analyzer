@@ -1,4 +1,4 @@
-# A Simple email parsing tool
+# CLI entry point for phishing email analysis.
 
 import argparse 
 import sys
@@ -14,11 +14,25 @@ from vt import check_urls_vt
 from display import display_results
 from malwarebazaar import check_hashes_malwarebazaar
 from scoring import calculate_score
+from analyzer.iocs import build_ioc_collection
 from config import DEBUG
 
 def parse_args(argv=None):
-    parser = argparse.ArgumentParser(description="Process a filename.")
-    parser.add_argument("filename", help="Path to the file to process")
+    parser = argparse.ArgumentParser(
+        description="Analyze an .eml file for phishing indicators."
+    )
+
+    parser.add_argument(
+        "filename",
+        help="Path to the .eml file to analyze"
+    )
+
+    parser.add_argument(
+        "--enrich",
+        action="store_true",
+        help="Enable external threat intelligence enrichment"
+    )
+
     return parser.parse_args(argv)
 
 def parse_headers(msg: Message) -> None:
@@ -39,16 +53,44 @@ def main(argv=None) -> None:
     with open(filename, 'rb') as f:
         msg = message_from_binary_file(f, policy=policy.default)
 
+    # Parse the email locally before any optional external enrichment.
     parse_headers(msg)
     body = parse_body(msg)
     urls = extract_urls(body)
-    vt_results = check_urls_vt(urls)
     attachments = parse_attachments(msg)
     hashes = hash_attachments(attachments)
-    mb_results = check_hashes_malwarebazaar(hashes)
     header_results = analyze_headers(msg)
-    score = calculate_score(header_results, vt_results, mb_results)
-    display_results(header_results, filename, hashes, vt_results, mb_results, score)
+
+    # Consolidate artifacts from the body, headers, and attachments.
+    iocs = build_ioc_collection(
+        urls,
+        hashes,
+        header_results
+    )
+
+    # External threat intelligence is opt-in with --enrich.
+    vt_results = []
+    mb_results = []
+
+    if args.enrich:
+        vt_results = check_urls_vt(urls)
+        mb_results = check_hashes_malwarebazaar(hashes)
+
+    score = calculate_score(
+        header_results,
+        vt_results,
+        mb_results
+    )
+
+    display_results(
+        header_results,
+        filename,
+        iocs,
+        vt_results,
+        mb_results,
+        score,
+        args.enrich
+    )
 
 if __name__ == "__main__":
     main()
