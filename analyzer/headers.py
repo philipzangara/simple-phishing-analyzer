@@ -1,7 +1,16 @@
 from email.utils import parseaddr
 from email.message import Message
 import tldextract
+from dataclasses import dataclass
 from config import DEBUG
+
+@dataclass
+class HeaderAnalysis:
+    origin_domain: str | None
+    from_domain: str | None
+    mismatch: bool | None
+    hops: int    
+    reason: str = "N/A"
 
 def analyze_headers(msg: Message) -> dict:
     auth_fields = ["spf", "dkim", "dmarc"]
@@ -79,11 +88,17 @@ def check_reply_to(msg: Message) -> dict:
 # received gets a header similar to "from 2435sdf.co.uk (X.X.X.X) by DM6NAFSDTM11FT012.mail.protection.outlook.com ...."
 # The last item of the array is the first hop
 # Split the array, the "from" is the [0] item of the array, then the domain is the [1] item
-def received_chain_analysis(msg: Message) -> dict:
+def received_chain_analysis(msg: Message) -> HeaderAnalysis:
     received = msg.get_all('Received')
 
     if not received:
-        return {"mismatch": None, "reason": "No Received headers"} 
+        return HeaderAnalysis(
+                            origin_domain=None,
+                            from_domain=None,
+                            mismatch=None,
+                            hops=0,
+                            reason="No Received headers"
+                )
     
     received_split = received[-1].split()
     received_extract = tldextract.extract(received_split[1])
@@ -96,10 +111,12 @@ def received_chain_analysis(msg: Message) -> dict:
         mismatch = False     
     else:
         mismatch = True
+
+
+    return HeaderAnalysis(
+                        origin_domain=received_extract.domain + "." + received_extract.suffix,
+                        from_domain=from_extract.domain + "." + from_extract.suffix,
+                        mismatch=mismatch,
+                        hops=len(received)
+            )
     
-    return {
-        "origin_domain": received_extract.domain+"."+received_extract.suffix,
-        "from_domain": from_extract.domain+"."+from_extract.suffix,
-        "mismatch": mismatch,
-        "hops": len(received)
-    }

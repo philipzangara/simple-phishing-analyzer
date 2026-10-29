@@ -54,9 +54,7 @@ def build_ioc_collection(
         .get("reply_to", {})
         .get("replyto_domain"),
 
-        header_results
-        .get("received_chain", {})
-        .get("origin_domain")
+        header_results["received_chain"].origin_domain
     ]
 
     for hostname in header_domains:

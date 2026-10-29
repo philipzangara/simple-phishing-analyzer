@@ -1,7 +1,7 @@
 import unittest
 from email.message import EmailMessage
 
-from headers import (
+from analyzer.headers import (
     analyze_headers,
     check_display_name_spoof,
     check_reply_to,
@@ -123,10 +123,11 @@ class TestHeaders(unittest.TestCase):
 
         result = received_chain_analysis(msg)
 
-        self.assertEqual(result["origin_domain"], "example.com")
-        self.assertEqual(result["from_domain"], "example.com")
-        self.assertFalse(result["mismatch"])
-        self.assertEqual(result["hops"], 2)
+        self.assertEqual(result.origin_domain, "example.com")
+        self.assertEqual(result.from_domain, "example.com")
+        self.assertFalse(result.mismatch)
+        self.assertEqual(result.hops, 2)
+        self.assertEqual(result.reason, "N/A")
 
     def test_received_origin_does_not_match_from_domain(self):
         msg = self.create_message(
@@ -139,10 +140,11 @@ class TestHeaders(unittest.TestCase):
 
         result = received_chain_analysis(msg)
 
-        self.assertEqual(result["origin_domain"], "malicious.net")
-        self.assertEqual(result["from_domain"], "microsoft.com")
-        self.assertTrue(result["mismatch"])
-        self.assertEqual(result["hops"], 2)
+        self.assertEqual(result.origin_domain, "malicious.net")
+        self.assertEqual(result.from_domain, "microsoft.com")
+        self.assertTrue(result.mismatch)
+        self.assertEqual(result.hops, 2)
+        self.assertEqual(result.reason, "N/A")
 
     def test_received_chain_uses_oldest_header_as_origin(self):
         msg = self.create_message(
@@ -156,16 +158,19 @@ class TestHeaders(unittest.TestCase):
 
         result = received_chain_analysis(msg)
 
-        self.assertEqual(result["origin_domain"], "example.com")
-        self.assertEqual(result["hops"], 3)
+        self.assertEqual(result.origin_domain, "example.com")
+        self.assertEqual(result.hops, 3)
 
     def test_missing_received_headers(self):
         msg = self.create_message()
 
         result = received_chain_analysis(msg)
 
-        self.assertIsNone(result["mismatch"])
-        self.assertEqual(result["reason"], "No Received headers")
+        self.assertIsNone(result.origin_domain)
+        self.assertIsNone(result.from_domain)
+        self.assertIsNone(result.mismatch)
+        self.assertEqual(result.hops, 0)
+        self.assertEqual(result.reason, "No Received headers")
 
     # ------------------------------------------------------------------
     # Complete header analysis
@@ -199,8 +204,7 @@ class TestHeaders(unittest.TestCase):
         self.assertIn("received_chain", result)
 
         self.assertFalse(result["reply_to"]["mismatch"])
-        self.assertFalse(result["received_chain"]["mismatch"])
-
+        self.assertFalse(result["received_chain"].mismatch)
 
 if __name__ == "__main__":
     unittest.main()

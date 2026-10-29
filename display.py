@@ -37,9 +37,9 @@ def display_results(
     )
     print_field(
         "Origin Domain: ",
-        defang(results["received_chain"].get("origin_domain", "N/A"))
+        defang(results["received_chain"].origin_domain or "N/A")
     )
-    print_field("Hops: " , results["received_chain"].get("hops", "N/A"))
+    print_field("Hops: " , results["received_chain"].hops or "N/A")
     print("\nAuthentication")
     print_field("   SPF: ", results.get("spf", "N/A"))
     print_field("   DKIM: ", results.get("dkim", "N/A"))
@@ -47,7 +47,7 @@ def display_results(
     print("\n=== Findings ===")
     print_field("Display Name Spoof: ", verdict(results["display_name_spoof"]["spoofed"]))
     print_field("Reply-To Mismatch: " , verdict(results["reply_to"]["mismatch"]))
-    print_field("Received Chain Mismatch: " , verdict(results["received_chain"].get("mismatch", "N/A")))
+    print_field("Received Chain Mismatch: " , verdict(results["received_chain"].mismatch or "N/A"))
 
     # Display extracted artifacts independently of threat intelligence.
     print("\n=== Observables ===")

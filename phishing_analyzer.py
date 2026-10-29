@@ -7,7 +7,7 @@ from email import message_from_binary_file
 from email import policy
 from email.message import Message
 
-from headers import analyze_headers
+from analyzer.headers import analyze_headers
 from body import parse_body, extract_urls
 from attachments import parse_attachments, hash_attachments
 from vt import check_urls_vt

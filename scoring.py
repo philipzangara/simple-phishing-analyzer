@@ -38,7 +38,7 @@ def calculate_score(header_results: dict, vt_results: list, mb_results: list) ->
         score += 25
         reasons.append("Reply-To Mismatch")
     
-    if header_results["received_chain"].get("mismatch") is True:
+    if header_results["received_chain"].mismatch is True:
         score += 20
         reasons.append("Received Chain Mismatch")
 
