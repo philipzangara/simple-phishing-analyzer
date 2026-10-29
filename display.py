@@ -20,7 +20,7 @@ def display_results(
     score: dict,
     enrichment_enabled: bool ) -> None:
 
-    print("=== Simple Phishing Analyzer v1.1.0 ===")
+    print("=== Simple Phishing Analyzer v1.1.1 ===")
     print("\n=== File Info ===")
     print_field("Email: ", filename)
     print_field("Size: ", f"{Path(filename).stat().st_size} bytes")
