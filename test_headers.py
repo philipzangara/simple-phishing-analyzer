@@ -207,6 +207,19 @@ class TestHeaders(unittest.TestCase):
         self.assertFalse(result.reply_to_mismatch)
         self.assertFalse(result.received_mismatch)
 
+    def test_malformed_from_header_recovers_address(self):
+        msg = self.create_message(
+            from_header='"Microsoft account team", _ <no-reply@access-accsecurity.com>'
+        )
+
+        result = check_display_name_spoof(msg)
+
+        self.assertEqual(result.display_name, "Microsoft account team")
+        self.assertEqual(
+            result.from_domain,
+            "access-accsecurity.com"
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

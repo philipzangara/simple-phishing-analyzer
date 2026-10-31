@@ -1,3 +1,4 @@
+import re
 from email.utils import parseaddr
 from email.message import Message
 import tldextract
@@ -32,6 +33,27 @@ class HeaderAnalysis:
     received_mismatch: bool | None = None
     received_hops: int | None = None
     received_reason: str = "N/A"
+
+def parse_from_header(from_header: str) -> tuple[str, str]:
+    name, addr = parseaddr(from_header)
+
+    # Normal parse succeeded
+    if "@" in addr:
+        return name, addr
+
+    # Fallback for malformed From headers
+    match = re.search(r"<([^<>]+@[^<>]+)>", from_header)
+
+    if match:
+        addr = match.group(1).strip()
+
+        # Everything before <address> is treated as the display name
+        name = from_header[:match.start()].strip(' ,"_')
+
+        return name, addr
+
+    return name, addr
+
 
 
 def analyze_headers(msg: Message) -> HeaderAnalysis:
@@ -84,7 +106,7 @@ def analyze_headers(msg: Message) -> HeaderAnalysis:
 # Check is the display name is similar to the domain name, ex. "Microsoft Support" and info@microsoft.com
 # Matches on the first word found in domain - TLD not evaluated here.
 def check_display_name_spoof(msg: Message) -> DisplaySpoofAnalysis:
-    name, addr = parseaddr(msg['From'])
+    name, addr = parse_from_header(msg['From'])
 
     # If display_name is not empty
     if name:
@@ -114,7 +136,7 @@ def check_display_name_spoof(msg: Message) -> DisplaySpoofAnalysis:
 def check_reply_to(msg: Message) -> dict:
     if msg['Reply-To']:
         _, reply_addr = parseaddr(msg['Reply-To'])
-        _, from_addr = parseaddr(msg['From'])
+        _, from_addr = parse_from_header(msg['From'])
         reply_extract = tldextract.extract(reply_addr)
         from_extract = tldextract.extract(from_addr)
         if reply_extract.domain == from_extract.domain:
@@ -153,7 +175,7 @@ def received_chain_analysis(msg: Message) -> HeaderAnalysis:
     received_split = received[-1].split()
     received_extract = tldextract.extract(received_split[1])
 
-    _, from_addr = parseaddr(msg['From'])
+    _, from_addr = parse_from_header(msg['From'])
     from_extract = tldextract.extract(from_addr)
 
     mismatch = None
