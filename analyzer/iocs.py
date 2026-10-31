@@ -3,6 +3,8 @@ from ipaddress import ip_address
 from urllib.parse import urlsplit
 from typing import Optional
 
+from analyzer.headers import HeaderAnalysis
+
 # Stores observables collected across the email analysis.
 @dataclass
 class IOCCollection:
@@ -32,7 +34,8 @@ def classify_hostname(
 def build_ioc_collection(
     urls: list[str],
     hashes: list[dict],
-    header_results: dict ) -> IOCCollection:    
+    header_results: HeaderAnalysis ) -> IOCCollection:  
+
     domains: set[str] = set()
     ips: set[str] = set()
 
@@ -46,15 +49,13 @@ def build_ioc_collection(
 
     # Collect domains identified during header analysis.
     header_domains = [
-        header_results
-        .get("display_name_spoof", {})
-        .get("from_domain"),
-
-        header_results
-        .get("reply_to", {})
-        .get("replyto_domain"),
-
-        header_results["received_chain"].origin_domain
+    (
+        header_results.display_name_spoof.from_domain
+        if header_results.display_name_spoof
+        else None
+    ),
+    header_results.reply_to_domain,
+    header_results.received_origin_domain
     ]
 
     for hostname in header_domains:

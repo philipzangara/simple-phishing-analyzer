@@ -47,9 +47,9 @@ class TestHeaders(unittest.TestCase):
 
         result = check_display_name_spoof(msg)
 
-        self.assertFalse(result["spoofed"])
-        self.assertEqual(result["display_name"], "Microsoft Support")
-        self.assertEqual(result["from_domain"], "microsoft.com")
+        self.assertFalse(result.spoofed)
+        self.assertEqual(result.display_name, "Microsoft Support")
+        self.assertEqual(result.from_domain, "microsoft.com")
 
     def test_display_name_does_not_match_from_domain(self):
         msg = self.create_message(
@@ -58,9 +58,9 @@ class TestHeaders(unittest.TestCase):
 
         result = check_display_name_spoof(msg)
 
-        self.assertTrue(result["spoofed"])
-        self.assertEqual(result["display_name"], "Microsoft Support")
-        self.assertEqual(result["from_domain"], "example.com")
+        self.assertTrue(result.spoofed)
+        self.assertEqual(result.display_name, "Microsoft Support")
+        self.assertEqual(result.from_domain, "example.com")
 
     def test_missing_display_name(self):
         msg = self.create_message(
@@ -69,8 +69,8 @@ class TestHeaders(unittest.TestCase):
 
         result = check_display_name_spoof(msg)
 
-        self.assertIsNone(result["spoofed"])
-        self.assertEqual(result["reason"], "No display name present")
+        self.assertIsNone(result.spoofed)
+        self.assertEqual(result.reason, "No display name present")
 
     # ------------------------------------------------------------------
     # Reply-To analysis
@@ -123,11 +123,11 @@ class TestHeaders(unittest.TestCase):
 
         result = received_chain_analysis(msg)
 
-        self.assertEqual(result.origin_domain, "example.com")
-        self.assertEqual(result.from_domain, "example.com")
-        self.assertFalse(result.mismatch)
-        self.assertEqual(result.hops, 2)
-        self.assertEqual(result.reason, "N/A")
+        self.assertEqual(result.received_origin_domain, "example.com")
+        self.assertEqual(result.received_from_domain, "example.com")
+        self.assertFalse(result.received_mismatch)
+        self.assertEqual(result.received_hops, 2)
+        self.assertEqual(result.received_reason, "N/A")
 
     def test_received_origin_does_not_match_from_domain(self):
         msg = self.create_message(
@@ -140,11 +140,11 @@ class TestHeaders(unittest.TestCase):
 
         result = received_chain_analysis(msg)
 
-        self.assertEqual(result.origin_domain, "malicious.net")
-        self.assertEqual(result.from_domain, "microsoft.com")
-        self.assertTrue(result.mismatch)
-        self.assertEqual(result.hops, 2)
-        self.assertEqual(result.reason, "N/A")
+        self.assertEqual(result.received_origin_domain, "malicious.net")
+        self.assertEqual(result.received_from_domain, "microsoft.com")
+        self.assertTrue(result.received_mismatch)
+        self.assertEqual(result.received_hops, 2)
+        self.assertEqual(result.received_reason, "N/A")
 
     def test_received_chain_uses_oldest_header_as_origin(self):
         msg = self.create_message(
@@ -158,19 +158,22 @@ class TestHeaders(unittest.TestCase):
 
         result = received_chain_analysis(msg)
 
-        self.assertEqual(result.origin_domain, "example.com")
-        self.assertEqual(result.hops, 3)
+        self.assertEqual(result.received_origin_domain, "example.com")
+        self.assertEqual(result.received_hops, 3)
 
     def test_missing_received_headers(self):
         msg = self.create_message()
 
         result = received_chain_analysis(msg)
 
-        self.assertIsNone(result.origin_domain)
-        self.assertIsNone(result.from_domain)
-        self.assertIsNone(result.mismatch)
-        self.assertEqual(result.hops, 0)
-        self.assertEqual(result.reason, "No Received headers")
+        self.assertIsNone(result.received_origin_domain)
+        self.assertIsNone(result.received_from_domain)
+        self.assertIsNone(result.received_mismatch)
+        self.assertEqual(result.received_hops, 0)
+        self.assertEqual(
+            result.received_reason,
+            "No Received headers"
+        )
 
     # ------------------------------------------------------------------
     # Complete header analysis
@@ -194,17 +197,16 @@ class TestHeaders(unittest.TestCase):
 
         result = analyze_headers(msg)
 
-        self.assertEqual(result["spf"], "pass")
-        self.assertEqual(result["dkim"], "pass")
-        self.assertEqual(result["dmarc"], "pass")
-        self.assertEqual(result["subject"], "Account notification")
+        self.assertEqual(result.spf, "pass")
+        self.assertEqual(result.dkim, "pass")
+        self.assertEqual(result.dmarc, "pass")
+        self.assertEqual(result.subject, "Account notification")
 
-        self.assertIn("display_name_spoof", result)
-        self.assertIn("reply_to", result)
-        self.assertIn("received_chain", result)
+        self.assertIsNotNone(result.display_name_spoof)
 
-        self.assertFalse(result["reply_to"]["mismatch"])
-        self.assertFalse(result["received_chain"].mismatch)
+        self.assertFalse(result.reply_to_mismatch)
+        self.assertFalse(result.received_mismatch)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,6 +1,7 @@
 from typing import Optional, Any
 from pathlib import Path
 from analyzer.iocs import IOCCollection
+from analyzer.headers import HeaderAnalysis
 from config import DEBUG
 
 def defang(value: str) -> str:
@@ -12,7 +13,7 @@ def defang(value: str) -> str:
     )
 
 def display_results(
-    results: dict,
+    results: HeaderAnalysis,
     filename: str,
     iocs: IOCCollection,
     vt_results: list,
@@ -25,29 +26,48 @@ def display_results(
     print_field("Email: ", filename)
     print_field("Size: ", f"{Path(filename).stat().st_size} bytes")
     print("\n=== Header Analysis ===")
-    print_field("Subject: ", results.get("subject", "N/A"))
-    print_field("From: ", results["display_name_spoof"].get("display_name", "N/A"))
+    print_field("Subject: ", results.subject or "N/A")
     print_field(
-    "Domain: ",
-    defang(results["display_name_spoof"].get("from_domain", "N/A"))
+    "From: ",
+    results.display_name_spoof.display_name
+    if results.display_name_spoof else "N/A"
     )
     print_field(
-        "Reply-To: ",
-        defang(results["reply_to"].get("replyto_domain", "N/A"))
+    "From Domain: ",
+    defang(results.display_name_spoof.from_domain or "N/A")
+    if results.display_name_spoof else "N/A"
     )
     print_field(
-        "Origin Domain: ",
-        defang(results["received_chain"].origin_domain or "N/A")
+    "Reply-To Domain: ",
+    defang(results.reply_to_domain or "N/A")
     )
-    print_field("Hops: " , results["received_chain"].hops or "N/A")
-    print("\nAuthentication")
-    print_field("   SPF: ", results.get("spf", "N/A"))
-    print_field("   DKIM: ", results.get("dkim", "N/A"))
-    print_field("   DMARC: ", results.get("dmarc", "N/A"))
-    print("\n=== Findings ===")
-    print_field("Display Name Spoof: ", verdict(results["display_name_spoof"]["spoofed"]))
-    print_field("Reply-To Mismatch: " , verdict(results["reply_to"]["mismatch"]))
-    print_field("Received Chain Mismatch: " , verdict(results["received_chain"].mismatch or "N/A"))
+    print_field(
+    "Origin Domain: ",
+    defang(results.received_origin_domain or "N/A")
+    )
+    print_field("Hops: ", results.received_hops or "N/A")
+
+    print_field("   SPF: ", results.spf)
+    print_field("   DKIM: ", results.dkim)
+    print_field("   DMARC: ", results.dmarc)
+
+    print_field(
+        "Display Name Spoof: ",
+        verdict(
+            results.display_name_spoof.spoofed
+            if results.display_name_spoof else None
+        )
+    )
+
+    print_field(
+        "Reply-To Mismatch: ",
+        verdict(results.reply_to_mismatch)
+    )
+
+    print_field(
+        "Received Chain Mismatch: ",
+        verdict(results.received_mismatch)
+    )
 
     # Display extracted artifacts independently of threat intelligence.
     print("\n=== Observables ===")
