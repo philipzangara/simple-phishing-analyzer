@@ -207,7 +207,9 @@ https://github.com/rf-peixoto/phishing_pot/
 
 ## Code Quality
 
-- Type checked with mypy
+- Static type checking with MyPy
+- Automated GitHub Actions CI
+- Type-checked on every pull request and commit
 - Unit tested with unittest
 
 ## Version
