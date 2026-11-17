@@ -2,6 +2,7 @@ import requests
 import base64
 import time
 import os
+from collections.abc import MutableMapping
 from dotenv import load_dotenv
 from config import DEBUG
 
@@ -20,16 +21,18 @@ def check_urls_vt(urls: list) -> list:
     for url in urls:
         url_id = base64.urlsafe_b64encode(url.encode()).decode().rstrip('=')
 
-        headers = {"x-apikey": api_key}
+        headers: MutableMapping[str, str | bytes] = {
+        "x-apikey": api_key # this fixes mypy ignore warning
+        }
         data = {"url": url} 
         post_response = requests.post("https://www.virustotal.com/api/v3/urls", 
-                                  headers=headers, data=data) # type: ignore
+                                  headers=headers, data=data)
         
         if post_response.status_code != 200:
             vt_results.append({"url": url, "error": f"POST failed: {post_response.status_code}"})
         else:
             get_response = requests.get(f"https://www.virustotal.com/api/v3/urls/{url_id}", 
-                                headers=headers) # type: ignore
+                                headers=headers) 
             try:
                 response = get_response.json()
                 stats = response["data"]["attributes"]["last_analysis_stats"]
