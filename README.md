@@ -1,4 +1,5 @@
 # Simple Phishing Analyzer
+[![Mypy](https://github.com/philipzangara/simple-phishing-analyzer/actions/workflows/mypy.yml/badge.svg)](https://github.com/philipzangara/simple-phishing-analyzer/actions/workflows/mypy.yml)
 
 A Python-based phishing email analyzer that performs automated triage of `.eml` files.
 
